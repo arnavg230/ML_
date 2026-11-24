@@ -1,0 +1,27 @@
+column,description
+collision_index,Unique collision identifier
+severity,"Target label: Fatal, Serious or Slight"
+latitude,Latitude
+longitude,Longitude
+hour,Hour of collision
+month,Month of collision
+day_of_week,"Day number, Monday=0"
+day_name,Day name
+is_weekend,Binary weekend indicator
+is_night,Binary night indicator
+rush_hour,Binary peak commute indicator
+season,Meteorological season
+weather_conditions,DfT weather code
+road_type,DfT road type code
+speed_limit,Road speed limit in mph
+light_conditions,DfT light condition code
+road_surface_conditions,DfT road surface code
+urban_or_rural_area,DfT urban/rural code
+weather_label,Readable weather label
+light_label,Readable light condition label
+road_type_label,Readable road type label
+surface_label,Readable road surface label
+area_label,Readable urban or rural label
+vehicle_count,Vehicles recorded in collision
+casualty_count,Casualties recorded in collision
+first_vehicle_type,DfT vehicle type code of primary involved vehicle

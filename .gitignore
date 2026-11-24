@@ -1,0 +1,25 @@
+# Local Python environment
+.venv/
+venv/
+env/
+
+# Python and notebook caches
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Local Streamlit credentials and settings
+.streamlit/secrets.toml
+.streamlit/credentials.toml
+
+# Temporary and backup files
+*.bak
+*.log
+*.tmp
+~$*.docx
+~$*.pptx
+.DS_Store
+Thumbs.db
+
+# Locally assembled submission archive
+Intelligent_Road_Safety_Submission.zip

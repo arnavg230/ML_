@@ -1,0 +1,4 @@
+approach,fatal_recall,evaluation_split
+plain,0.0,validation
+class_weight balanced,0.6242937853107344,validation
+SMOTE training sample,0.576271186440678,validation
