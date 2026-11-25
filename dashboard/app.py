@@ -249,35 +249,30 @@ if page_selection == 'Executive Overview':
             </div>
             ''', unsafe_allow_html=True)
 
-        # 5-Stage Project Architecture Pipeline Banner
+        # 4-Stage Project Architecture Pipeline Banner
         st.markdown('''
         <div style="margin: 1.5rem 0 1rem 0;">
             <h3 style="margin: 0 0 0.6rem 0; font-size: 1.1rem; color: #0f172a;">Project End-to-End Pipeline</h3>
             <div class="workflow-stepper">
                 <div class="workflow-step active">
                     <div class="step-number">Stage 01</div>
-                    <div class="step-title">Data Ingestion</div>
+                    <div class="step-title">Ingest</div>
                     <div class="step-desc">STATS19 collision, casualty, and vehicle relational joins.</div>
                 </div>
                 <div class="workflow-step active">
                     <div class="step-number">Stage 02</div>
-                    <div class="step-title">Preprocessing</div>
-                    <div class="step-desc">Bounding filters, median/mode imputation, time feature extraction.</div>
+                    <div class="step-title">Prepare</div>
+                    <div class="step-desc">Bounding filters, median/mode imputation, feature engineering.</div>
                 </div>
                 <div class="workflow-step active">
                     <div class="step-number">Stage 03</div>
-                    <div class="step-title">Balanced ML</div>
-                    <div class="step-desc">Validation-based model selection with imbalance-mitigation comparisons.</div>
+                    <div class="step-title">Model</div>
+                    <div class="step-desc">Balanced classification, K-Means clustering, forecasting &amp; rules.</div>
                 </div>
                 <div class="workflow-step active">
                     <div class="step-number">Stage 04</div>
-                    <div class="step-title">Regional Clusters</div>
-                    <div class="step-desc">Projected-coordinate K-Means regional clustering and composite scoring.</div>
-                </div>
-                <div class="workflow-step active">
-                    <div class="step-number">Stage 05</div>
-                    <div class="step-title">Scenario Simulator</div>
-                    <div class="step-desc">Hypothetical collision-severity estimates with probability distributions.</div>
+                    <div class="step-title">Deploy</div>
+                    <div class="step-desc">8-view Streamlit dashboard &amp; hypothetical scenario simulator.</div>
                 </div>
             </div>
         </div>
@@ -304,7 +299,7 @@ if page_selection == 'Executive Overview':
                 <div>
                     <h4 style="margin: 0 0 0.5rem 0; color: #0f172a;">Why Class Imbalance Matters</h4>
                     <p style="font-size: 0.88rem; color: #475569; line-height: 1.5; margin-bottom: 0.8rem;">
-                        In road safety, <strong>Fatal collisions comprise only ~1.5%</strong> of all incidents. A naive baseline model that blindly predicts "Slight" for every single crash achieves <strong>~76.7% accuracy</strong>, yet misses 100% of fatalities.
+                        In road safety, <strong>Fatal collisions comprise only 1.48%</strong> of all incidents. A naive baseline model that blindly predicts "Slight" for every single crash achieves <strong>76.7% accuracy</strong>, yet misses 100% of fatalities.
                     </p>
                     <p style="font-size: 0.88rem; color: #475569; line-height: 1.5; margin: 0;">
                         Our methodology uses cost-sensitive learning to emphasize fatal-event sensitivity. These retrospective scenario estimates are for academic decision support, not real-time early warning.
@@ -1015,10 +1010,13 @@ else:
         <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem;">
             <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Python 3.12</span>
             <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Scikit-Learn</span>
+            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Imbalanced-learn</span>
+            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">MLxtend</span>
             <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Streamlit</span>
             <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Plotly Express</span>
-            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Folium & GIS Leaflet</span>
-            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Pandas & NumPy</span>
+            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Matplotlib &amp; Seaborn</span>
+            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Folium &amp; GIS Leaflet</span>
+            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Pandas &amp; NumPy</span>
             <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Joblib</span>
         </div>
         <p style="font-size: 0.85rem; color: #64748b; line-height: 1.5; margin: 0;">

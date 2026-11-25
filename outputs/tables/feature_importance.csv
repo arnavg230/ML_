@@ -1,0 +1,16 @@
+feature,importance
+num__month,0.1963585109616767
+num__hour,0.17944815023947988
+num__day_of_week,0.11944531242564044
+num__speed_limit,0.08643311772989803
+num__vehicle_count,0.067318105621892
+num__rush_hour,0.02765795483846417
+num__is_weekend,0.01863402350038453
+cat__first_vehicle_type_9,0.018225735276119714
+cat__road_type_6,0.016678893641747412
+cat__urban_or_rural_area_1,0.016427551419558994
+cat__urban_or_rural_area_2,0.01565097029825142
+cat__weather_conditions_1,0.015400212688786497
+cat__road_surface_conditions_2,0.01516526539581702
+cat__road_surface_conditions_1,0.014755819938493397
+cat__road_type_3,0.013535956290689214
