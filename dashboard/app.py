@@ -161,10 +161,7 @@ nav_options = [
     'Data Explorer',
     'Regional Risk Map',
     'Risk Predictor',
-    'Model Comparison',
-    'Regression & Trends',
-    'Pattern Mining',
-    'Academic Dossier'
+    'Forecast & Insights'
 ]
 
 # Map friendly labels to original page keys for backward compatibility
@@ -249,64 +246,18 @@ if page_selection == 'Executive Overview':
             </div>
             ''', unsafe_allow_html=True)
 
-        # 4-Stage Project Architecture Pipeline Banner
-        st.markdown('''
-        <div style="margin: 1.5rem 0 1rem 0;">
-            <h3 style="margin: 0 0 0.6rem 0; font-size: 1.1rem; color: #0f172a;">Project End-to-End Pipeline</h3>
-            <div class="workflow-stepper">
-                <div class="workflow-step active">
-                    <div class="step-number">Stage 01</div>
-                    <div class="step-title">Ingest</div>
-                    <div class="step-desc">STATS19 collision, casualty, and vehicle relational joins.</div>
-                </div>
-                <div class="workflow-step active">
-                    <div class="step-number">Stage 02</div>
-                    <div class="step-title">Prepare</div>
-                    <div class="step-desc">Bounding filters, median/mode imputation, feature engineering.</div>
-                </div>
-                <div class="workflow-step active">
-                    <div class="step-number">Stage 03</div>
-                    <div class="step-title">Model</div>
-                    <div class="step-desc">Balanced classification, K-Means clustering, forecasting &amp; rules.</div>
-                </div>
-                <div class="workflow-step active">
-                    <div class="step-number">Stage 04</div>
-                    <div class="step-title">Deploy</div>
-                    <div class="step-desc">8-view Streamlit dashboard &amp; hypothetical scenario simulator.</div>
-                </div>
-            </div>
-        </div>
-        ''', unsafe_allow_html=True)
-
-        # Overview Visuals Row
-        c1, c2 = st.columns([1.2, 1])
-        with c1:
-            fig_pie = px.pie(
-                df,
-                names='severity',
-                title='Class Distribution (Severe Imbalance)',
-                color='severity',
-                color_discrete_map={'Slight': '#0d9488', 'Serious': '#f59e0b', 'Fatal': '#ef4444'},
-                hole=0.45
-            )
-            fig_pie.update_traces(textposition='inside', textinfo='percent+label', marker=dict(line=dict(color='#ffffff', width=2)))
-            fig_pie.update_layout(margin=dict(t=40, b=20, l=20, r=20), height=350)
-            st.plotly_chart(fig_pie, use_container_width=True)
-
-        with c2:
-            st.markdown('''
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.4rem; height: 350px; display: flex; flex-direction: column; justify-content: space-between;">
-                <div>
-                    <h4 style="margin: 0 0 0.5rem 0; color: #0f172a;">Why Class Imbalance Matters</h4>
-                    <p style="font-size: 0.88rem; color: #475569; line-height: 1.5; margin-bottom: 0.8rem;">
-                        In road safety, <strong>Fatal collisions comprise only 1.48%</strong> of all incidents. A naive baseline model that blindly predicts "Slight" for every single crash achieves <strong>76.7% accuracy</strong>, yet misses 100% of fatalities.
-                    </p>
-                    <p style="font-size: 0.88rem; color: #475569; line-height: 1.5; margin: 0;">
-                        Our methodology uses cost-sensitive learning to emphasize fatal-event sensitivity. These retrospective scenario estimates are for academic decision support, not real-time early warning.
-                    </p>
-                </div>
-            </div>
-            ''', unsafe_allow_html=True)
+        # Overview Visual
+        fig_pie = px.pie(
+            df,
+            names='severity',
+            title='Class Distribution (150,000 Collisions)',
+            color='severity',
+            color_discrete_map={'Slight': '#0d9488', 'Serious': '#f59e0b', 'Fatal': '#ef4444'},
+            hole=0.45
+        )
+        fig_pie.update_traces(textposition='inside', textinfo='percent+label', marker=dict(line=dict(color='#ffffff', width=2)))
+        fig_pie.update_layout(margin=dict(t=40, b=20, l=20, r=20), height=320)
+        st.plotly_chart(fig_pie, use_container_width=True)
     else:
         st.info('Cleaned dataset not found. Please run notebooks 01 and 02 to generate data artifacts.')
 
@@ -327,7 +278,7 @@ elif page_selection == 'Data Explorer':
     else:
         df = read_csv(data_path)
 
-        with st.expander('🔍 Dynamic Filters & Slice Controls', expanded=True):
+        with st.expander('🔍 Dynamic Filters & Slice Controls', expanded=False):
             f1, f2, f3, f4, f5 = st.columns(5)
             years = f1.multiselect('Collision Year', sorted(df.collision_year.unique()), default=sorted(df.collision_year.unique()))
             severities = f2.multiselect('Severity', df.severity.unique(), default=list(df.severity.unique()))
@@ -459,14 +410,7 @@ elif page_selection == 'Regional Risk Map':
             </div>
             ''', unsafe_allow_html=True)
 
-            st.markdown('''
-            <div style="margin-top: 1rem; font-size: 0.78rem; color: #64748b; line-height: 1.45;">
-                <strong>Regional Composite Formula:</strong><br>
-                <em>Risk Score</em> combines normalized crash volume, severe injury proportion, and casualty density with equal weighting:
-                <br><code>Score = (1/3)*(Accidents_norm + SevereShare_norm + AvgCas_norm) * 100</code>
-                <br><span style="font-size: 0.74rem;">Normalized via Min-Max scaling: (x - Min) / (Max - Min)</span>
-            </div>
-            ''', unsafe_allow_html=True)
+            st.caption('Score = (1/3) × (Accidents_norm + SevereShare_norm + AvgCas_norm) × 100')
 
         with h_col2:
             st.dataframe(
@@ -553,48 +497,46 @@ elif page_selection == 'Risk Predictor':
     default_day = {'Rain': 4, 'City': 1, 'Motorway': 4}.get(scenario, 2)
 
     with st.form('predict_form'):
-        st.markdown('### Parameter Inputs')
-        p1, p2, p3 = st.columns(3)
+        st.markdown('##### Parameter Inputs (11 Controls)')
+        p1, p2, p3, p4 = st.columns(4)
         hour = p1.slider('Hour of Day (24-hr)', 0, 23, default_hour)
         day = p2.selectbox('Day of Week', range(7), index=default_day, format_func=lambda x: DAY_MAP.get(x, str(x)))
         month = p3.selectbox('Month', range(1, 13), index=5, format_func=lambda x: MONTH_MAP.get(x, str(x)))
+        speed_choices = options.get('speed_limit', [30])
+        sp_idx = speed_choices.index(default_speed) if default_speed in speed_choices else 0
+        speed_limit = p4.selectbox('Speed Limit (mph)', speed_choices, index=sp_idx)
 
         is_weekend = day >= 5
         is_night = hour >= 22 or hour < 6
         rush_hour = hour in [7, 8, 9, 16, 17, 18]
 
-        c_a, c_b = st.columns(2)
-        with c_a:
-            weather_choices = options.get('weather_conditions', [1])
-            w_idx = weather_choices.index(default_weather) if default_weather in weather_choices else 0
-            weather_conditions = st.selectbox('Weather Conditions', weather_choices, index=w_idx, format_func=lambda x: WEATHER_MAP.get(x, f'Code {x}'))
+        c_a, c_b, c_c, c_d = st.columns(4)
+        weather_choices = options.get('weather_conditions', [1])
+        w_idx = weather_choices.index(default_weather) if default_weather in weather_choices else 0
+        weather_conditions = c_a.selectbox('Weather', weather_choices, index=w_idx, format_func=lambda x: WEATHER_MAP.get(x, f'Code {x}'))
 
-            light_choices = options.get('light_conditions', [1])
-            l_idx = light_choices.index(default_light) if default_light in light_choices else 0
-            light_conditions = st.selectbox('Lighting Conditions', light_choices, index=l_idx, format_func=lambda x: LIGHT_MAP.get(x, f'Code {x}'))
+        light_choices = options.get('light_conditions', [1])
+        l_idx = light_choices.index(default_light) if default_light in light_choices else 0
+        light_conditions = c_b.selectbox('Lighting', light_choices, index=l_idx, format_func=lambda x: LIGHT_MAP.get(x, f'Code {x}'))
 
-            road_choices = options.get('road_type', [6])
-            r_idx = road_choices.index(default_road) if default_road in road_choices else 0
-            road_type = st.selectbox('Road Type', road_choices, index=r_idx, format_func=lambda x: ROAD_TYPE_MAP.get(x, f'Code {x}'))
+        road_choices = options.get('road_type', [6])
+        r_idx = road_choices.index(default_road) if default_road in road_choices else 0
+        road_type = c_c.selectbox('Road Type', road_choices, index=r_idx, format_func=lambda x: ROAD_TYPE_MAP.get(x, f'Code {x}'))
 
-        with c_b:
-            surface_choices = options.get('road_surface_conditions', [1])
-            s_idx = surface_choices.index(default_surface) if default_surface in surface_choices else 0
-            road_surface_conditions = st.selectbox('Road Surface Conditions', surface_choices, index=s_idx, format_func=lambda x: SURFACE_MAP.get(x, f'Code {x}'))
+        surface_choices = options.get('road_surface_conditions', [1])
+        s_idx = surface_choices.index(default_surface) if default_surface in surface_choices else 0
+        road_surface_conditions = c_d.selectbox('Road Surface', surface_choices, index=s_idx, format_func=lambda x: SURFACE_MAP.get(x, f'Code {x}'))
 
-            area_choices = options.get('urban_or_rural_area', [1])
-            a_idx = area_choices.index(default_area) if default_area in area_choices else 0
-            urban_or_rural_area = st.selectbox('Urban or Rural Area', area_choices, index=a_idx, format_func=lambda x: AREA_MAP.get(x, f'Code {x}'))
+        c_s1, c_s2, c_s3 = st.columns(3)
+        area_choices = options.get('urban_or_rural_area', [1])
+        a_idx = area_choices.index(default_area) if default_area in area_choices else 0
+        urban_or_rural_area = c_s1.selectbox('Urban / Rural', area_choices, index=a_idx, format_func=lambda x: AREA_MAP.get(x, f'Code {x}'))
 
-            vehicle_choices = options.get('first_vehicle_type', [9])
-            v_idx = vehicle_choices.index(9) if 9 in vehicle_choices else 0
-            first_vehicle_type = st.selectbox('Primary Vehicle Type', vehicle_choices, index=v_idx, format_func=lambda x: VEHICLE_TYPE_MAP.get(x, f'Type {x}'))
+        vehicle_choices = options.get('first_vehicle_type', [9])
+        v_idx = vehicle_choices.index(9) if 9 in vehicle_choices else 0
+        first_vehicle_type = c_s2.selectbox('Primary Vehicle', vehicle_choices, index=v_idx, format_func=lambda x: VEHICLE_TYPE_MAP.get(x, f'Type {x}'))
 
-        c_s1, c_s2 = st.columns(2)
-        speed_choices = options.get('speed_limit', [30])
-        sp_idx = speed_choices.index(default_speed) if default_speed in speed_choices else 0
-        speed_limit = c_s1.selectbox('Posted Speed Limit (mph)', speed_choices, index=sp_idx)
-        vehicle_count = c_s2.number_input('Total Number of Vehicles Involved', 1, 20, 2)
+        vehicle_count = c_s3.number_input('Vehicles Involved', 1, 20, 2)
 
         submit = st.form_submit_button('Run Scenario Severity Estimate', use_container_width=True)
 
@@ -692,7 +634,7 @@ elif page_selection == 'Risk Predictor':
                 ))
                 fig_gauge.update_layout(height=320, margin=dict(t=40, b=20, l=30, r=30))
                 st.plotly_chart(fig_gauge, use_container_width=True)
-                st.caption('Scenario Severity Risk Score is a scenario-specific weighted severity index: 95 × P(Fatal) + 60 × P(Serious) + 15 × P(Slight), distinct from the geographic macro-zone Composite Spatial Risk Index on Page 3. Class probabilities come from the selected historical-data model and are not calibrated real-world risk estimates.')
+                st.caption('Weighted index: 95 × P(Fatal) + 60 × P(Serious) + 15 × P(Slight).')
 
             # Feature Influences
             tip_path = ROOT / 'outputs/tables/selected_model_feature_effects.csv'
@@ -725,303 +667,110 @@ elif page_selection == 'Risk Predictor':
                 </div>
                 ''', unsafe_allow_html=True)
 
-        st.caption('Academic Decision-Support Prototype. Estimates are statistical inferences based on historical STATS19 data and should not substitute for professional roadside safety audits.')
+        st.caption('Academic Decision-Support Prototype based on historical STATS19 data.')
 
 # ==============================================================================
-# PAGE 5: MODEL COMPARISON & EVALUATION
+# PAGE 5: FORECAST & INSIGHTS (COMBINED WORKING DEMO)
 # ==============================================================================
-elif page_selection == 'Model Comparison':
+else:
     st.markdown('''
     <div class="page-header-card">
-        <span class="page-header-badge">Benchmark & Validation</span>
-        <h1>Comparative Classifier Evaluation</h1>
-        <p>Eight classifiers compared on a validation split using class-specific recall, macro-averaged F1, and a safety-weighted selection criterion. The published model is then evaluated once on a final test split.</p>
+        <span class="page-header-badge">Forecasting, Benchmarks &amp; Rules</span>
+        <h1>Daily Forecast &amp; Analytical Insights</h1>
+        <p>Interactive daily collision volume forecaster, classifier benchmark summary, and top environmental hazard rules.</p>
     </div>
     ''', unsafe_allow_html=True)
 
-    p_metrics = ROOT / 'outputs/tables/classification_metrics.csv'
-    if p_metrics.exists():
-        metrics_df = read_csv(p_metrics)
+    tab_forecast, tab_models, tab_rules = st.tabs([
+        '🔮 Daily Volume Forecast',
+        '🏆 Classifier Benchmark',
+        '🔗 Hazard Pattern Rules'
+    ])
 
-        tab_bench, tab_imbalance, tab_diagnostic, tab_sens = st.tabs([
-            '🏆 Multi-Classifier Benchmark',
-            '⚖️ Class Imbalance Mitigation',
-            '📉 Diagnostic Curves & Errors',
-            '🎯 Sensitivity & Specificity'
-        ])
+    with tab_forecast:
+        reg_path = ROOT / 'outputs/tables/regression_metrics.csv'
+        if reg_path.exists():
+            reg_df = read_csv(reg_path)
+            best_r = reg_df.sort_values('RMSE').iloc[0]
 
-        with tab_bench:
-            st.dataframe(metrics_df, use_container_width=True)
+            rc1, rc2, rc3, rc4 = st.columns(4)
+            rc1.metric('Best Model', best_r.model)
+            rc2.metric('R² Score', f'{best_r.R2:.3f}')
+            rc3.metric('RMSE', f'{best_r.RMSE:.1f} crashes')
+            rc4.metric('MAE', f'{best_r.MAE:.1f} crashes')
 
+            reg_model = get_regressor()
+            if reg_model is not None:
+                with st.form('reg_forecast_form'):
+                    rf1, rf2, rf3 = st.columns(3)
+                    f_day = rf1.selectbox('Day of Week', range(7), index=4, format_func=lambda x: DAY_MAP.get(x, str(x)))
+                    f_month = rf2.selectbox('Month of Year', range(1, 13), index=10, format_func=lambda x: MONTH_MAP.get(x, str(x)))
+                    f_weekend = int(f_day >= 5)
+                    rf3.info('Weekend: Yes' if f_weekend else 'Weekend: No (Weekday)')
+
+                    rf4, rf5 = st.columns(2)
+                    f_rain = rf4.slider('Expected Rain Share (%)', 0, 100, 15) / 100.0
+                    f_night = rf5.slider('Expected Night Share (%)', 0, 100, 20) / 100.0
+
+                    if st.form_submit_button('Run Daily Volume Forecast', use_container_width=True):
+                        f_row = pd.DataFrame([{
+                            'day': f_day,
+                            'month': f_month,
+                            'weekend': f_weekend,
+                            'rain_share': f_rain,
+                            'night_share': f_night
+                        }])
+                        f_pred = reg_model.predict(f_row)[0]
+                        st.success(f'Estimated Daily Collisions: **{max(0.0, f_pred):.1f}** crashes (MAE: ±{best_r.MAE:.1f})')
+
+            with st.expander('Regression Model Comparison Table'):
+                st.dataframe(reg_df, use_container_width=True)
+        else:
+            st.info('Regression metrics not found. Please run notebook 04 first.')
+
+    with tab_models:
+        p_metrics = ROOT / 'outputs/tables/classification_metrics.csv'
+        if p_metrics.exists():
+            metrics_df = read_csv(p_metrics)
             fig_comp = px.bar(
                 metrics_df,
                 x='model',
                 y=['fatal_recall', 'serious_recall', 'macro_f1', 'accuracy'],
                 barmode='group',
-                title='Multi-Metric Performance by Algorithm',
+                title='Validation Benchmark (8 Classifiers)',
                 color_discrete_sequence=['#ef4444', '#f59e0b', '#0d9488', '#64748b']
             )
-            fig_comp.update_layout(xaxis_title='Model', yaxis_title='Score (0.0 to 1.0)', height=400)
+            fig_comp.update_layout(xaxis_title='Model', yaxis_title='Score (0.0 to 1.0)', height=360)
             st.plotly_chart(fig_comp, use_container_width=True)
+            st.dataframe(metrics_df[['model', 'accuracy', 'macro_f1', 'fatal_recall', 'serious_recall', 'selection_score']], use_container_width=True)
+        else:
+            st.info('Classifier metrics not found. Run notebook 02 first.')
 
-            st.markdown('''
-            <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 0.85rem 1.1rem; border-radius: 6px; font-size: 0.88rem; color: #166534;">
-                <strong>Validation Benchmark Protocol:</strong> Candidate classifiers are evaluated on the 24,000-instance validation split. Selection Score = 0.5 * Fatal Recall + 0.5 * Serious Recall + 0.5 * Macro F1. The selected Logistic Regression model is refitted on all 120,000 training records, achieving 65.0% Fatal Recall and 51.8% Accuracy on the untouched 30,000-record final test set (displayed on Page 1).
-            </div>
-            ''', unsafe_allow_html=True)
+    with tab_rules:
+        rules_path = ROOT / 'outputs/tables/association_rules.csv'
+        if rules_path.exists():
+            rules_df = read_csv(rules_path)
+            st.caption('Top Apriori environmental rules ranked by Lift (co-occurrence, not causation).')
 
-        with tab_imbalance:
-            imb_path = ROOT / 'outputs/tables/imbalance_comparison.csv'
-            if imb_path.exists():
-                st.dataframe(read_csv(imb_path), use_container_width=True)
-                st.markdown('''
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.1rem; margin-top: 1rem;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: #0f172a;">Imbalance Mitigation Analysis</h4>
-                    <ul style="font-size: 0.88rem; color: #334155; margin: 0; padding-left: 1.2rem; line-height: 1.6;">
-                        <li><strong>Standard Logistic Regression:</strong> Validation comparison without class weighting.</li>
-                        <li><strong>Class-Weighted Logistic Regression:</strong> Validation comparison using inverse-frequency class weights.</li>
-                        <li><strong>SMOTE (Synthetic Minority Over-sampling):</strong> Applied only to a candidate-training subset and evaluated on validation data; it is not part of the final test-set evaluation.</li>
-                    </ul>
-                </div>
-                ''', unsafe_allow_html=True)
+            def format_rule_set(s):
+                import re
+                items = re.findall(r"'([^']+)'", str(s))
+                label_dict = {
+                    'light=1': 'Daylight', 'light=4': 'Dark (lights lit)', 'light=5': 'Dark (lights unlit)', 'light=6': 'Dark (no lights)', 'light=7': 'Dark (lighting unk)',
+                    'area=1': 'Urban', 'area=2': 'Rural',
+                    'road_type=1': 'Roundabout', 'road_type=2': 'One way', 'road_type=3': 'Dual carriageway', 'road_type=6': 'Single carriageway', 'road_type=7': 'Slip road',
+                    'weather=1': 'Fine weather', 'weather=2': 'Raining', 'weather=3': 'Snowing', 'weather=4': 'Fine+winds', 'weather=5': 'Rain+winds',
+                    'speed_band=low': 'Speed <=30mph', 'speed_band=medium': 'Speed 40-50mph', 'speed_band=high': 'Speed 60-70mph', 'speed_band=very_high': 'Speed >70mph',
+                    'severity=Fatal': 'Fatal Severity', 'severity=Serious': 'Serious Severity', 'severity=Slight': 'Slight Severity'
+                }
+                return ', '.join([label_dict.get(item, item) for item in items])
 
-        with tab_diagnostic:
-            d1, d2 = st.columns(2)
-            with d1:
-                if (ROOT / 'outputs/figures/confusion_matrix.png').exists():
-                    st.image(str(ROOT / 'outputs/figures/confusion_matrix.png'), caption='Figure: Confusion Matrix of Best Classifier')
-            with d2:
-                if (ROOT / 'outputs/figures/roc_curves.png').exists():
-                    st.image(str(ROOT / 'outputs/figures/roc_curves.png'), caption='Figure: Multi-Class ROC Curves')
+            display_rules = rules_df.copy()
+            if 'antecedents' in display_rules.columns and 'consequents' in display_rules.columns:
+                display_rules['antecedents'] = display_rules['antecedents'].apply(format_rule_set)
+                display_rules['consequents'] = display_rules['consequents'].apply(format_rule_set)
 
-            d3, d4 = st.columns(2)
-            with d3:
-                if (ROOT / 'outputs/figures/feature_importance.png').exists():
-                    st.image(str(ROOT / 'outputs/figures/feature_importance.png'), caption='Figure: Random Forest Gini Feature Importance')
-            with d4:
-                if (ROOT / 'outputs/figures/ann_loss_curve.png').exists():
-                    st.image(str(ROOT / 'outputs/figures/ann_loss_curve.png'), caption='Figure: Artificial Neural Network (MLPClassifier) Training Loss')
-
-            if (ROOT / 'outputs/figures/decision_tree.png').exists():
-                st.image(str(ROOT / 'outputs/figures/decision_tree.png'), caption='Figure: Decision Tree Structure (Depth=3)')
-
-        with tab_sens:
-            sp_path = ROOT / 'outputs/tables/best_model_sensitivity_specificity.csv'
-            if sp_path.exists():
-                st.dataframe(read_csv(sp_path), use_container_width=True)
-                st.caption('Sensitivity (True Positive Rate) vs Specificity (True Negative Rate) per severity tier.')
-    else:
-        st.info('Classifier metrics not found. Run notebook 02 first.')
-
-# ==============================================================================
-# PAGE 6: REGRESSION & TEMPORAL TRENDS
-# ==============================================================================
-elif page_selection == 'Regression & Trends':
-    st.markdown('''
-    <div class="page-header-card">
-        <span class="page-header-badge">Continuous Modeling</span>
-        <h1>Daily Collision Volume Forecasting</h1>
-        <p>Estimating daily aggregate collision totals from full raw data, with a chronological holdout rather than a random future-leaking split.</p>
-    </div>
-    ''', unsafe_allow_html=True)
-
-    reg_path = ROOT / 'outputs/tables/regression_metrics.csv'
-    if reg_path.exists():
-        reg_df = read_csv(reg_path)
-        best_r = reg_df.sort_values('RMSE').iloc[0]
-
-        rc1, rc2, rc3, rc4 = st.columns(4)
-        rc1.metric('Best Model', best_r.model)
-        rc2.metric('R² Score', f'{best_r.R2:.3f}')
-        rc3.metric('RMSE', f'{best_r.RMSE:.1f} crashes')
-        rc4.metric('MAE', f'{best_r.MAE:.1f} crashes')
-
-        st.dataframe(reg_df, use_container_width=True)
-
-        g1, g2 = st.columns(2)
-        with g1:
-            if (ROOT / 'outputs/figures/regression_actual_predicted.png').exists():
-                st.image(str(ROOT / 'outputs/figures/regression_actual_predicted.png'), caption='Figure: Actual vs. Predicted Daily Collisions')
-        with g2:
-            if (ROOT / 'outputs/figures/daily_trend.png').exists():
-                st.image(str(ROOT / 'outputs/figures/daily_trend.png'), caption='Figure: Daily Collision Timeline & Rolling Trends')
-
-        if (ROOT / 'outputs/figures/regression_residuals.png').exists():
-            st.image(str(ROOT / 'outputs/figures/regression_residuals.png'), caption='Figure: Residuals of Polynomial Regression Model')
-
-        # Interactive Daily Forecasting using best_regressor.joblib
-        reg_model = get_regressor()
-        if reg_model is not None:
-            st.markdown('### 🔮 Interactive Daily Collision Forecast')
-            st.caption(f'Simulate expected daily collision volume using the saved {best_r.model} model. Accuracy statistics refer to the chronological holdout period.')
-            with st.form('reg_forecast_form'):
-                rf1, rf2, rf3 = st.columns(3)
-                f_day = rf1.selectbox('Day of Week', range(7), index=4, format_func=lambda x: DAY_MAP.get(x, str(x)))
-                f_month = rf2.selectbox('Month of Year', range(1, 13), index=10, format_func=lambda x: MONTH_MAP.get(x, str(x)))
-                f_weekend = int(f_day >= 5)
-                rf3.info('Weekend: Yes' if f_weekend else 'Weekend: No (Weekday)')
-
-                rf4, rf5 = st.columns(2)
-                f_rain = rf4.slider('Expected Rain Share of Collisions (%)', 0, 100, 15) / 100.0
-                f_night = rf5.slider('Expected Night Share of Collisions (%)', 0, 100, 20) / 100.0
-
-                f_submit = st.form_submit_button('Run Daily Volume Forecast', use_container_width=True)
-                if f_submit:
-                    f_row = pd.DataFrame([{
-                        'day': f_day,
-                        'month': f_month,
-                        'weekend': f_weekend,
-                        'rain_share': f_rain,
-                        'night_share': f_night
-                    }])
-                    f_pred = reg_model.predict(f_row)[0]
-                    st.success(f'Estimated Daily Collisions: **{max(0.0, f_pred):.1f}** crashes (Baseline MAE: ±{best_r.MAE:.1f} crashes)')
-    else:
-        st.info('Regression metrics not found. Please run notebook 04 first.')
-
-# ==============================================================================
-# PAGE 7: ASSOCIATION RULE MINING
-# ==============================================================================
-elif page_selection == 'Pattern Mining':
-    st.markdown('''
-    <div class="page-header-card">
-        <span class="page-header-badge">Unsupervised Pattern Discovery</span>
-        <h1>Environmental Association Rule Mining</h1>
-        <p>Uncovering descriptive environmental co-occurrence rules whose consequents are a single serious or fatal severity class.</p>
-    </div>
-    ''', unsafe_allow_html=True)
-
-    rules_path = ROOT / 'outputs/tables/association_rules.csv'
-    if rules_path.exists():
-        rules_df = read_csv(rules_path)
-
-        st.markdown('''
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.2rem;">
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem;">
-                <strong style="color: #0d9488;">Support</strong>
-                <p style="margin: 0.3rem 0 0 0; font-size: 0.8rem; color: #64748b;">The proportion of total collisions containing the combined itemset {A, B}.</p>
-            </div>
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem;">
-                <strong style="color: #f59e0b;">Confidence</strong>
-                <p style="margin: 0.3rem 0 0 0; font-size: 0.8rem; color: #64748b;">Conditional probability: P(Severity | Conditions). How often B occurs when A is present.</p>
-            </div>
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem;">
-                <strong style="color: #ef4444;">Lift</strong>
-                <p style="margin: 0.3rem 0 0 0; font-size: 0.8rem; color: #64748b;">Strength of association over independent chance. Lift &gt; 1 indicates positive co-occurrence; it is not a significance test or causal estimate.</p>
-            </div>
-        </div>
-        ''', unsafe_allow_html=True)
-
-        # Format rules for clean presentation
-        def format_rule_set(s):
-            import re
-            items = re.findall(r"'([^']+)'", str(s))
-            label_dict = {
-                'light=1': 'Daylight', 'light=4': 'Dark (lights lit)', 'light=5': 'Dark (lights unlit)', 'light=6': 'Dark (no lights)', 'light=7': 'Dark (lighting unk)',
-                'area=1': 'Urban', 'area=2': 'Rural',
-                'road_type=1': 'Roundabout', 'road_type=2': 'One way', 'road_type=3': 'Dual carriageway', 'road_type=6': 'Single carriageway', 'road_type=7': 'Slip road',
-                'weather=1': 'Fine weather', 'weather=2': 'Raining', 'weather=3': 'Snowing', 'weather=4': 'Fine+winds', 'weather=5': 'Rain+winds',
-                'speed_band=low': 'Speed <=30mph', 'speed_band=medium': 'Speed 40-50mph', 'speed_band=high': 'Speed 60-70mph', 'speed_band=very_high': 'Speed >70mph',
-                'severity=Fatal': 'Fatal Severity', 'severity=Serious': 'Serious Severity', 'severity=Slight': 'Slight Severity'
-            }
-            return ', '.join([label_dict.get(item, item) for item in items])
-
-        display_rules = rules_df.copy()
-        if 'antecedents' in display_rules.columns and 'consequents' in display_rules.columns:
-            display_rules['antecedents'] = display_rules['antecedents'].apply(format_rule_set)
-            display_rules['consequents'] = display_rules['consequents'].apply(format_rule_set)
-
-        st.dataframe(display_rules, use_container_width=True)
-    else:
-        st.info('Association rules data not found. Please run notebook 05 first.')
-
-# ==============================================================================
-# PAGE 8: ACADEMIC PROJECT DOSSIER
-# ==============================================================================
-else:
-    st.markdown('''
-    <div class="page-header-card">
-        <span class="page-header-badge">Academic Metadata & Governance</span>
-        <h1>Project Dossier & Course Mapping</h1>
-        <p>Institutional metadata, technical specifications, and syllabus course learning outcome (CLO) mappings for university examination and evaluation.</p>
-    </div>
-    ''', unsafe_allow_html=True)
-
-    d1, d2 = st.columns(2)
-    with d1:
-        st.markdown('''
-        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.4rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <h3 style="margin-top: 0; color: #0f172a;">Course & Candidate Credentials</h3>
-            <table style="width: 100%; font-size: 0.9rem; border-collapse: collapse;">
-                <tr style="border-bottom: 1px solid #f1f5f9; height: 36px;">
-                    <td style="color: #64748b;">Subject / Course:</td>
-                    <td><strong>UML501: Machine Learning</strong></td>
-                </tr>
-                <tr style="border-bottom: 1px solid #f1f5f9; height: 36px;">
-                    <td style="color: #64748b;">Program & Semester:</td>
-                    <td><strong>B.Tech Computer Science & Engg (5th Sem)</strong></td>
-                </tr>
-                <tr style="border-bottom: 1px solid #f1f5f9; height: 36px;">
-                    <td style="color: #64748b;">Student Candidate:</td>
-                    <td><strong>Arnav Gupta<br>Jasmandeep Sharma</strong></td>
-                </tr>
-                <tr style="border-bottom: 1px solid #f1f5f9; height: 36px;">
-                    <td style="color: #64748b;">University Roll Number:</td>
-                    <td><strong>1024170057<br>1024170269</strong></td>
-                </tr>
-                <tr style="border-bottom: 1px solid #f1f5f9; height: 36px;">
-                    <td style="color: #64748b;">Project Supervisor / Guide:</td>
-                    <td><strong>Mr. Harjot Singh (Lab Instructor)</strong></td>
-                </tr>
-                <tr style="height: 36px;">
-                    <td style="color: #64748b;">Institution:</td>
-                    <td><strong>Thapar Institute of Engineering &amp; Technology</strong></td>
-                </tr>
-                <tr style="height: 36px;">
-                    <td style="color: #64748b;">Academic Session:</td>
-                    <td><strong>2026–2027</strong></td>
-                </tr>
-            </table>
-        </div>
-        ''', unsafe_allow_html=True)
-
-    with d2:
-        st.markdown('''
-        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.4rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <h3 style="margin-top: 0; color: #0f172a;">Course Learning Outcomes (CLO)</h3>
-            <div style="margin-bottom: 0.8rem;">
-                <strong style="color: #0d9488;">CLO 1: Data Preprocessing & EDA</strong>
-                <p style="margin: 0.2rem 0; font-size: 0.82rem; color: #475569;">Handling missing values, outlier bounding, temporal feature engineering, and exploratory data profiling.</p>
-            </div>
-            <div style="margin-bottom: 0.8rem;">
-                <strong style="color: #3b82f6;">CLO 2: Supervised Learning & Imbalance Mitigation</strong>
-                <p style="margin: 0.2rem 0; font-size: 0.82rem; color: #475569;">Comparative benchmarking of 8 classifiers, cost-sensitive weighting, SMOTE, and regression volume forecasting.</p>
-            </div>
-            <div>
-                <strong style="color: #f59e0b;">CLO 3: Unsupervised Clustering & Neural Networks</strong>
-                <p style="margin: 0.2rem 0; font-size: 0.82rem; color: #475569;">Spatial K-Means clustering, silhouette optimization, Apriori association rules, and MLPClassifier neural network training.</p>
-            </div>
-        </div>
-        ''', unsafe_allow_html=True)
-
-    st.markdown('''
-    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.4rem; margin-top: 1.4rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <h3 style="margin-top: 0; color: #0f172a;">Technology Stack & Provenance</h3>
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem;">
-            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Python 3.12</span>
-            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Scikit-Learn</span>
-            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Imbalanced-learn</span>
-            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">MLxtend</span>
-            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Streamlit</span>
-            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Plotly Express</span>
-            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Matplotlib &amp; Seaborn</span>
-            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Folium &amp; GIS Leaflet</span>
-            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Pandas &amp; NumPy</span>
-            <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 600;">Joblib</span>
-        </div>
-        <p style="font-size: 0.85rem; color: #64748b; line-height: 1.5; margin: 0;">
-            Data Source: Open road casualty records published by the Department for Transport (DfT), UK, licensed under the Open Government Licence v3.0.
-        </p>
-    </div>
-    ''', unsafe_allow_html=True)
+            st.dataframe(display_rules, use_container_width=True)
+        else:
+            st.info('Association rules data not found. Please run notebook 05 first.')
 
